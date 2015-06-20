@@ -18,6 +18,20 @@ ENV_DIR=$3
 GRADLE_TASK=${GRADLE_TASK-stage}
 
 print_env
+
+vendored_node_version=0.10.25
+node_dir=$CACHE_DIR/node
+
+if [ ! -d $node_dir ]; then
+    status "Vendoring Node v$vendored_node_version to run Bower."
+    mkdir $node_dir
+    curl -s http://s3pository.heroku.com/node/v$vendored_node_version/node-v$vendored_node_version-linux-x64.tar.gz | tar xfz - -C $node_dir --strip-components=1
+fi
+
+$node_dir/bin/npm --silent -g install bower
+export bower_run=$node_dir/bin/bower
+$bower_run --allow-root isntall
+
 export_env_dir $ENV_DIR
 
 JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
