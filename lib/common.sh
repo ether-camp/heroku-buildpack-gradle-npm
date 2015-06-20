@@ -12,3 +12,13 @@ export_env_dir() {
     done
   fi
 }
+
+
+print_env(){
+	echo "Build Pack Environment"
+	echo "--------------------- " 
+	echo "BP_DIR    = $BP_DIR"
+	echo "BUILD_DIR = $BUILD_DIR"
+	echo "CACHE_DIR = $CACHE_DIR"
+	echo "ENV_DIR   = $ENV_DIR"
+}
