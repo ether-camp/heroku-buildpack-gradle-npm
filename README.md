@@ -1,4 +1,6 @@
-Heroku buildpack: Gradle [![Build Status](https://travis-ci.org/heroku/heroku-buildpack-gradle.svg?branch=master)](https://travis-ci.org/heroku/heroku-buildpack-gradle)
+Heroku buildpack: Gradle [![Build Status](https://travis-ci.org/ether-camp/heroku-buildpack-gradle-bower.svg?branch=master)](https://https://travis-ci.org/ether-camp/heroku-buildpack-gradle-bower)
+
+
 =========================
 
 This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpack) for Gradle apps.
