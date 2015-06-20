@@ -2,15 +2,8 @@
 # bin/use <build-dir>
 
 
-if [ -f $1/gradlew ]; then
-  echo "Gradle" && exit 0
-
-# Detect these Gradle specific files, so we can fail with a message 
-# asking the user to enable the Gradle Wrapper for their project.  
-elif [ -f $1/build.gradle ]; then
-  echo "Gradle" && exit 0
-elif [ -f $1/settings.gradle ]; then
-  echo "Gradle" && exit 0
+if [ -f $1/build.gradle ] && [$1/package.json] && [-f $1/bower.json]; then
+  echo "GradleBower" && exit 0
 
 else
   echo "no" && exit 1
