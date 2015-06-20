@@ -2,9 +2,8 @@
 # bin/use <build-dir>
 
 
-if [ -f $1/build.gradle ] && [$1/package.json] && [-f $1/bower.json]; then
+if [[ -f $1/build.gradle && -f $1/bower.json && -f $1/package.json ]]; then
   echo "GradleBower" && exit 0
-
 else
   echo "no" && exit 1
 fi
