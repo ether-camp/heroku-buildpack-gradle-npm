@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+status() {
+  echo "-----> $*"
+}
+
 export_env_dir() {
   env_dir=$1
   whitelist_regex=${2:-''}
