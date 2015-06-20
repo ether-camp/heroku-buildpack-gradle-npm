@@ -30,6 +30,7 @@ fi
 
 $node_dir/bin/npm --silent -g install bower
 export bower_run=$node_dir/bin/bower
+PATH=$PATH:$node_dir/bin
   
 cd $BUILD_DIR
 status "Running: $bower_run --allow-root install"
