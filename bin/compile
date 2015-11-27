@@ -47,18 +47,18 @@ if [ -e gulpfile.js ]; then
 
   if [ ! -d $gulp_app ]; then
       status  "Installing gulp"
-      $node_dir/bin/npm --silent -g install gulp
-      $node_dir/bin/npm --silent -g install gulp-minify-css
-      $node_dir/bin/npm --silent -g install gulp-concat-css
-      $node_dir/bin/npm --silent -g install gulp-concat
-      $node_dir/bin/npm --silent -g install gulp-uglify
-      $node_dir/bin/npm --silent -g install gulp-has
-      $node_dir/bin/npm --silent -g install gulp
-      $node_dir/bin/npm --silent -g install fs
-      $node_dir/bin/npm --silent -g install split
-      $node_dir/bin/npm --silent -g install util
-      $node_dir/bin/npm --silent -g install path
-      $node_dir/bin/npm --silent -g install stream
+      $node_dir/bin/npm --silent install gulp
+      $node_dir/bin/npm --silent install gulp-minify-css
+      $node_dir/bin/npm --silent install gulp-concat-css
+      $node_dir/bin/npm --silent install gulp-concat
+      $node_dir/bin/npm --silent install gulp-uglify
+      $node_dir/bin/npm --silent install gulp-has
+      $node_dir/bin/npm --silent install gulp
+      $node_dir/bin/npm --silent install fs
+      $node_dir/bin/npm --silent install split
+      $node_dir/bin/npm --silent install util
+      $node_dir/bin/npm --silent install path
+      $node_dir/bin/npm --silent install stream
   fi
 
   export gulp_run=$BUILD_DIR/node_modules/.bin/gulp
