@@ -52,7 +52,7 @@ if [ -e gulpfile.js ]; then
       $node_dir/bin/npm --silent install gulp-concat-css
       $node_dir/bin/npm --silent install gulp-concat
       $node_dir/bin/npm --silent install gulp-uglify
-      $node_dir/bin/npm --silent install gulp-has
+      $node_dir/bin/npm --silent install gulp-hash
       $node_dir/bin/npm --silent install gulp
       $node_dir/bin/npm --silent install fs
       $node_dir/bin/npm --silent install split
