@@ -61,7 +61,7 @@ if [ -e gulpfile.js ]; then
       $node_dir/bin/npm --silent -g install stream
   fi
 
-  export gulp_run=$node_dir/lib/node_modules/.bin/gulp
+  export gulp_run=$BUILD_DIR/node_modules/.bin/gulp
 
   status "Running: $gulp_run"
   $gulp_run
