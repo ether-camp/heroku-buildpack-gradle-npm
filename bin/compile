@@ -10,6 +10,10 @@ OPT_DIR=$BP_DIR/opt
 LIB_DIR=$BP_DIR/lib
 . $LIB_DIR/common.sh
 
+### Load dependencies
+
+source $BP_DIR/lib/binaries.sh
+
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
@@ -23,16 +27,26 @@ NPM_TASK="run build:prod"
 
 print_env
 
-vendored_node_version=0.10.25
-node_dir=$CACHE_DIR/node
-#bower_app=$node_dir/lib/node_modules/bower
-#gulp_app=$node_dir/lib/node_modules/gulp
+node_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.node")
+npm_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.npm")
 
-if [ ! -d $node_dir ]; then
-    status "Vendoring Node v$vendored_node_version"
-    mkdir -p $node_dir
-    curl -s http://s3pository.heroku.com/node/v$vendored_node_version/node-v$vendored_node_version-linux-x64.tar.gz | tar xfz - -C $node_dir --strip-components=1
-fi
+echo "engines.node (package.json):  ${node_engine:-unspecified}"
+echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
+
+node_dir=$CACHE_DIR/node
+install_nodejs "$node_engine" "$node_dir"
+install_npm "$npm_engine" "$node_dir"
+
+#vendored_node_version=0.10.25
+#node_dir=$CACHE_DIR/node
+##bower_app=$node_dir/lib/node_modules/bower
+##gulp_app=$node_dir/lib/node_modules/gulp
+#
+#if [ ! -d $node_dir ]; then
+#    status "Vendoring Node v$vendored_node_version"
+#    mkdir -p $node_dir
+#    curl -s http://s3pository.heroku.com/node/v$vendored_node_version/node-v$vendored_node_version-linux-x64.tar.gz | tar xfz - -C $node_dir --strip-components=1
+#fi
 
 #
 #if [ ! -d $bower_app ]; then
