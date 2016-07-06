@@ -34,6 +34,9 @@ echo "engines.node (package.json):  ${node_engine:-unspecified}"
 echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
 
 node_dir=$CACHE_DIR/node
+if [ ! -d $node_dir ]; then
+    mkdir -p $node_dir
+fi
 install_nodejs "$node_engine" "$node_dir"
 install_npm "$npm_engine" "$node_dir"
 
