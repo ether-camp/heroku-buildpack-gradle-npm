@@ -7,10 +7,9 @@ echo "detect_test.sh running"
 testDetectGradlew()
 {
 
-  touch ${BUILD_DIR}/build.gradle
-  touch ${BUILD_DIR}/bower.json
-  touch ${BUILD_DIR}/package.json
+  touch ${BUILD_DIR}/backend/build.gradle
+  touch ${BUILD_DIR}/frontend/package.json
 
   detect
-  assertAppDetected "GradleBower"
+  assertAppDetected "GradleNpm"
 }

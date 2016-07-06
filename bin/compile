@@ -15,46 +15,54 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
+FRONTEND_DIR=$1/frontend
+BACKEND_DIR=$1/backend
+
 GRADLE_TASK=${GRADLE_TASK-stage}
+NPM_TASK=run build:prod
 
 print_env
 
 vendored_node_version=0.10.25
 node_dir=$CACHE_DIR/node
-bower_app=$node_dir/lib/node_modules/bower
-gulp_app=$node_dir/lib/node_modules/gulp
+#bower_app=$node_dir/lib/node_modules/bower
+#gulp_app=$node_dir/lib/node_modules/gulp
 
 if [ ! -d $node_dir ]; then
-    status "Vendoring Node v$vendored_node_version to run Bower."
+    status "Vendoring Node v$vendored_node_version"
     mkdir -p $node_dir
     curl -s http://s3pository.heroku.com/node/v$vendored_node_version/node-v$vendored_node_version-linux-x64.tar.gz | tar xfz - -C $node_dir --strip-components=1
 fi
 
+#
+#if [ ! -d $bower_app ]; then
+#    status  "Installing bower"
+#    $node_dir/bin/npm --silent -g install bower
+#fi
 
-if [ ! -d $bower_app ]; then
-    status  "Installing bower"
-    $node_dir/bin/npm --silent -g install bower
-fi
-
-export bower_run=$node_dir/bin/bower
-PATH=$PATH:$node_dir/bin
+#export bower_run=$node_dir/bin/bower
+#PATH=$PATH:$node_dir/bin
   
-cd $BUILD_DIR
-status "Running: $bower_run --allow-root install"
-$bower_run --allow-root install
+cd $FRONTEND_DIR
+#status "Running: $bower_run --allow-root install"
+#$bower_run --allow-root install
 
+export npm_run=$node_dir/bin/npm
 status  "Installing npm dependencies"
-$node_dir/bin/npm --silent install
+$npm_run --silent install
+echo -n "Building prod frontend assets ... "
+$npm_run --silent $NPM_TASK
 
-if [ -e gulpfile.js ]; then
+#if [ -e gulpfile.js ]; then
+#
+#  export gulp_run=$BUILD_DIR/node_modules/.bin/gulp
+#
+#  status "Running: $gulp_run"
+#  $gulp_run --env=prod
+#
+#fi
 
-  export gulp_run=$BUILD_DIR/node_modules/.bin/gulp
-
-  status "Running: $gulp_run"
-  $gulp_run --env=prod
-
-fi
-
+cd $BACKEND_DIR
 export_env_dir $ENV_DIR
 
 JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
@@ -64,10 +72,10 @@ curl --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-common --st
 . /tmp/jvm-common/bin/java
 
 # install JDK
-javaVersion=$(detect_java_version ${BUILD_DIR})
+javaVersion=$(detect_java_version ${BACKEND_DIR})
 echo -n "-----> Installing OpenJDK ${javaVersion}... "
-install_java ${BUILD_DIR} ${javaVersion}
-jdk_overlay ${BUILD_DIR}
+install_java ${BACKEND_DIR} ${javaVersion}
+jdk_overlay ${BACKEND_DIR}
 echo "done"
 
 if [ ! -d $CACHE_DIR ] ; then
@@ -76,19 +84,17 @@ fi
 
 export GRADLE_USER_HOME=$CACHE_DIR/.gradle
 
-if [ ! -f $BUILD_DIR/gradlew ] ; then
+if [ ! -f $BACKEND_DIR/gradlew ] ; then
   echo "-----> Installing Gradle Wrapper..."
   echo "       WARNING: Your application does not have it's own gradlew file."
   echo "       We'll install one for you, but this is a deprecated feature and"
   echo "       in the future may not be supported."
-  cp -rn ${OPT_DIR}/wrapper/* ${BUILD_DIR}
+  cp -rn ${OPT_DIR}/wrapper/* ${BACKEND_DIR}
 fi
 BUILDCMD="./gradlew"
-chmod +x ${BUILD_DIR}/gradlew
+chmod +x ${BACKEND_DIR}/gradlew
 
 BUILDCMD="$BUILDCMD $GRADLE_TASK"
-
-cd $BUILD_DIR
 
 # build app
 echo "-----> Building Gradle app..."
