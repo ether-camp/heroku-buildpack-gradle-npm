@@ -67,6 +67,7 @@ cd $FRONTEND_DIR
 
 export npm_run=$node_dir/bin/npm
 status  "Installing npm frontend dependencies"
+npm config set registry http://registry.npmjs.org/
 $npm_run install
 echo -n "Building prod frontend assets ... "
 $npm_run --silent $NPM_TASK
