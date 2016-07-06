@@ -19,108 +19,93 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
+# Locations of backend and frontend folders
 FRONTEND_DIR=$1/frontend
 BACKEND_DIR=$1/backend
 
+# Build systems tasks (Backend - Gradle, Frontend - NPM)
 GRADLE_TASK=${GRADLE_TASK-stage}
 NPM_TASK="run build:prod"
 
 print_env
 
-node_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.node")
-npm_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.npm")
+install_frontend_bins() {
+  local node_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.node")
+  local npm_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.npm")
 
-echo "engines.node (package.json):  ${node_engine:-unspecified}"
-echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
+  echo "engines.node (package.json):  ${node_engine:-unspecified}"
+  echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
 
-node_dir=$CACHE_DIR/node
-if [ ! -d $node_dir ]; then
-    mkdir -p $node_dir
-fi
-install_nodejs "$node_engine" "$node_dir"
-PATH=$PATH:$node_dir/bin
-install_npm "$npm_engine"
+  node_dir=$CACHE_DIR/node
+  if [ ! -d $node_dir ]; then
+      mkdir -p $node_dir
+  fi
+  install_nodejs "$node_engine" "$node_dir"
+  PATH=$PATH:$node_dir/bin
+  install_npm "$npm_engine"
+  export npm_run=$node_dir/bin/npm
+}
+install_frontend_bins
 
-#vendored_node_version=0.10.25
-#node_dir=$CACHE_DIR/node
-##bower_app=$node_dir/lib/node_modules/bower
-##gulp_app=$node_dir/lib/node_modules/gulp
-#
-#if [ ! -d $node_dir ]; then
-#    status "Vendoring Node v$vendored_node_version"
-#    mkdir -p $node_dir
-#    curl -s http://s3pository.heroku.com/node/v$vendored_node_version/node-v$vendored_node_version-linux-x64.tar.gz | tar xfz - -C $node_dir --strip-components=1
-#fi
+install_frontend_deps() {
+  cd $FRONTEND_DIR
+  status  "Installing npm frontend dependencies"
+  $npm_run install
+}
+install_frontend_deps
 
-#
-#if [ ! -d $bower_app ]; then
-#    status  "Installing bower"
-#    $node_dir/bin/npm --silent -g install bower
-#fi
+compile_frontend_assets() {
+  cd $FRONTEND_DIR
+  echo -n "Building prod frontend assets ... "
+  $npm_run --silent $NPM_TASK
+}
+compile_frontend_assets
 
-#export bower_run=$node_dir/bin/bower
-#PATH=$PATH:$node_dir/bin
+install_backend_bins() {
+  cd $BACKEND_DIR
+  export_env_dir $ENV_DIR
 
-cd $FRONTEND_DIR
-#status "Running: $bower_run --allow-root install"
-#$bower_run --allow-root install
+  JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
+  mkdir -p /tmp/jvm-common
+  curl --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-common --strip-components=1
+  . /tmp/jvm-common/bin/util
+  . /tmp/jvm-common/bin/java
 
-export npm_run=$node_dir/bin/npm
-status  "Installing npm frontend dependencies"
-npm config set registry http://registry.npmjs.org/
-$npm_run install
-echo -n "Building prod frontend assets ... "
-$npm_run --silent $NPM_TASK
+  # install JDK
+  javaVersion=$(detect_java_version ${BACKEND_DIR})
+  echo -n "-----> Installing OpenJDK ${javaVersion}... "
+  install_java ${BACKEND_DIR} ${javaVersion}
+  jdk_overlay ${BACKEND_DIR}
+  echo "done"
 
-#if [ -e gulpfile.js ]; then
-#
-#  export gulp_run=$BUILD_DIR/node_modules/.bin/gulp
-#
-#  status "Running: $gulp_run"
-#  $gulp_run --env=prod
-#
-#fi
+  if [ ! -d $CACHE_DIR ] ; then
+    mkdir $CACHE_DIR
+  fi
 
-cd $BACKEND_DIR
-export_env_dir $ENV_DIR
+  export GRADLE_USER_HOME=$CACHE_DIR/.gradle
 
-JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
-mkdir -p /tmp/jvm-common
-curl --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-common --strip-components=1
-. /tmp/jvm-common/bin/util
-. /tmp/jvm-common/bin/java
+  if [ ! -f $BACKEND_DIR/gradlew ] ; then
+    echo "-----> Installing Gradle Wrapper..."
+    echo "       WARNING: Your application does not have it's own gradlew file."
+    echo "       We'll install one for you, but this is a deprecated feature and"
+    echo "       in the future may not be supported."
+    cp -rn ${OPT_DIR}/wrapper/* ${BACKEND_DIR}
+  fi
+  BUILDCMD="./gradlew"
+  chmod +x ${BACKEND_DIR}/gradlew
+}
+install_backend_bins
 
-# install JDK
-javaVersion=$(detect_java_version ${BACKEND_DIR})
-echo -n "-----> Installing OpenJDK ${javaVersion}... "
-install_java ${BACKEND_DIR} ${javaVersion}
-jdk_overlay ${BACKEND_DIR}
-echo "done"
-
-if [ ! -d $CACHE_DIR ] ; then
-  mkdir $CACHE_DIR
-fi
-
-export GRADLE_USER_HOME=$CACHE_DIR/.gradle
-
-if [ ! -f $BACKEND_DIR/gradlew ] ; then
-  echo "-----> Installing Gradle Wrapper..."
-  echo "       WARNING: Your application does not have it's own gradlew file."
-  echo "       We'll install one for you, but this is a deprecated feature and"
-  echo "       in the future may not be supported."
-  cp -rn ${OPT_DIR}/wrapper/* ${BACKEND_DIR}
-fi
-BUILDCMD="./gradlew"
-chmod +x ${BACKEND_DIR}/gradlew
-
+build_backend() {
 BUILDCMD="$BUILDCMD $GRADLE_TASK"
+  # build app
+  echo "-----> Building Gradle app..."
+  echo "       WARNING: The Gradle buildpack is currently in Beta."
+  echo "-----> executing $BUILDCMD"
 
-# build app
-echo "-----> Building Gradle app..."
-echo "       WARNING: The Gradle buildpack is currently in Beta."
-echo "-----> executing $BUILDCMD"
-
-$BUILDCMD 2>&1 | sed -u 's/^/       /'
+  $BUILDCMD 2>&1 | sed -u 's/^/       /'
+}
+build_backend
 
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   echo " !     Failed to build app"
