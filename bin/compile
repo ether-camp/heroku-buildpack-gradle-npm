@@ -38,7 +38,8 @@ if [ ! -d $node_dir ]; then
     mkdir -p $node_dir
 fi
 install_nodejs "$node_engine" "$node_dir"
-install_npm "$npm_engine" "$node_dir"
+PATH=$PATH:$node_dir/bin
+install_npm "$npm_engine"
 
 #vendored_node_version=0.10.25
 #node_dir=$CACHE_DIR/node
