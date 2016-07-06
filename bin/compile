@@ -19,7 +19,7 @@ FRONTEND_DIR=$1/frontend
 BACKEND_DIR=$1/backend
 
 GRADLE_TASK=${GRADLE_TASK-stage}
-NPM_TASK=run build:prod
+NPM_TASK="run build:prod"
 
 print_env
 
@@ -42,7 +42,7 @@ fi
 
 #export bower_run=$node_dir/bin/bower
 #PATH=$PATH:$node_dir/bin
-  
+
 cd $FRONTEND_DIR
 #status "Running: $bower_run --allow-root install"
 #$bower_run --allow-root install
