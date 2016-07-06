@@ -66,8 +66,8 @@ cd $FRONTEND_DIR
 #$bower_run --allow-root install
 
 export npm_run=$node_dir/bin/npm
-status  "Installing npm dependencies"
-$npm_run --silent install
+status  "Installing npm frontend dependencies"
+$npm_run install
 echo -n "Building prod frontend assets ... "
 $npm_run --silent $NPM_TASK
 
