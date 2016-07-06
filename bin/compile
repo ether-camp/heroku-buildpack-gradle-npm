@@ -11,7 +11,7 @@ LIB_DIR=$BP_DIR/lib
 . $LIB_DIR/common.sh
 
 ### Load dependencies
-
+source $BP_DIR/lib/json.sh
 source $BP_DIR/lib/binaries.sh
 
 # parse args
