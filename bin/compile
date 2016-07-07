@@ -73,7 +73,7 @@ install_backend_bins() {
 
   # install JDK
   echo -n "-----> Installing OpenJDK... "
-  install_java_with_overlay ${BACKEND_DIR}
+  install_java_with_overlay ${BUILD_DIR}
   echo "done"
 
   if [ ! -d $CACHE_DIR ] ; then
