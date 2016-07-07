@@ -108,6 +108,6 @@ BUILDCMD="$BUILDCMD $GRADLE_TASK"
 build_backend
 
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
-  echo " !     Failed to build app"
+  echo " !     Failed to build app. PIPESTATUS: ${PIPESTATUS[*]}"
   exit 1
 fi
