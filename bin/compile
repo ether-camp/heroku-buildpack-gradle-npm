@@ -91,13 +91,12 @@ install_backend_bins() {
     echo "       in the future may not be supported."
     cp -rn ${OPT_DIR}/wrapper/* ${BACKEND_DIR}
   fi
-  BUILDCMD="./gradlew"
   chmod +x ${BACKEND_DIR}/gradlew
 }
 install_backend_bins
 
 build_backend() {
-BUILDCMD="$BUILDCMD $GRADLE_TASK"
+BUILDCMD="./gradlew $GRADLE_TASK"
   # build app
   echo "-----> Building Gradle app..."
   echo "       WARNING: The Gradle buildpack is currently in Beta."
@@ -107,7 +106,7 @@ BUILDCMD="$BUILDCMD $GRADLE_TASK"
 }
 build_backend
 
-if [ "${PIPESTATUS[*]}" != "0 0" ]; then
+if [ "${PIPESTATUS[*]}" != "0" ]; then
   echo " !     Failed to build app. PIPESTATUS: ${PIPESTATUS[*]}"
   exit 1
 fi
