@@ -72,10 +72,8 @@ install_backend_bins() {
   . /tmp/jvm-common/bin/java
 
   # install JDK
-  javaVersion=$(detect_java_version ${BACKEND_DIR})
-  echo -n "-----> Installing OpenJDK ${javaVersion}... "
-  install_java ${BACKEND_DIR} ${javaVersion}
-  jdk_overlay ${BACKEND_DIR}
+  echo -n "-----> Installing OpenJDK... "
+  install_java_with_overlay ${BACKEND_DIR}
   echo "done"
 
   if [ ! -d $CACHE_DIR ] ; then
