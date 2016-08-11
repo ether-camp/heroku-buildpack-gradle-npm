@@ -83,9 +83,9 @@ run_frontend_tasks() {
   install_frontend_deps
   compile_frontend_assets
 }
-if [ "$SKIP_FRONTEND_BUILD" != "YES" ]; then
-  run_frontend_tasks
-fi
+#if [ "$SKIP_FRONTEND_BUILD" != "YES" ]; then
+#  run_frontend_tasks
+#fi
 
 install_backend_java() {
   JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
@@ -125,14 +125,13 @@ build_backend() {
   BUILDCMD="./gradlew $GRADLE_TASK"
   # build app
   echo "-----> Building Gradle app..."
-  echo "       WARNING: The Gradle buildpack is currently in Beta."
-  echo "-----> executing $BUILDCMD"
+  echo "-----> executing $BUILDCMD in $backend_dir"
 
   $BUILDCMD 2>&1 | sed -u 's/^/       /'
 }
 
 run_backend_tasks() {
-  install_backend_java
+#  install_backend_java
   oldIFS=$IFS
   IFS=";"
   for path in $BACKEND_DIR; do
