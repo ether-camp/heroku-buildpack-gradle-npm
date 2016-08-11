@@ -29,11 +29,11 @@ export_env_dir $ENV_DIR
 # Locations of backend and frontend folders
 FRONTEND_DIR=$1/frontend
 BACKEND_DIR=$1/backend
-if [ -z "$FRONTEND_SOURCE_DIR" ]; then
-    FRONTEND_DIR=$1/$FRONTEND_SOURCE_DIR
+if [ -n "$FRONTEND_SOURCE_DIR" ]; then
+  FRONTEND_DIR=$1/$FRONTEND_SOURCE_DIR
 fi
-if [ -z "$BACKEND_SOURCE_DIR" ]; then
-    BACKEND_DIR=$1/$BACKEND_SOURCE_DIR
+if [ -n "$BACKEND_SOURCE_DIR" ]; then
+  BACKEND_DIR=$1/$BACKEND_SOURCE_DIR
 fi
 
 # Displaying build strategy to user
