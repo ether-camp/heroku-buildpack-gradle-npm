@@ -35,7 +35,7 @@ fi
 if [ -n "$BACKEND_SOURCE_DIR" ]; then
   function join { local IFS="$1"; shift; echo "$BUILD_DIR/$*"; }
   IFS=';' read -ra BACKEND_SOURCE_DIRS <<< "$BACKEND_SOURCE_DIR"
-  BACKEND_DIR = $(join ; "${BACKEND_SOURCE_DIRS[@]}")
+  BACKEND_DIR=$(join ; "${BACKEND_SOURCE_DIRS[@]}")
 fi
 
 # Displaying build strategy to user
