@@ -19,16 +19,33 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
-# Locations of backend and frontend folders
-FRONTEND_DIR=$1/frontend
-BACKEND_DIR=$1/backend
-
 # Build systems tasks (Backend - Gradle, Frontend - NPM)
 GRADLE_TASK=${GRADLE_TASK-stage}
 NPM_TASK="run build:prod"
 
 print_env
 export_env_dir $ENV_DIR
+
+# Locations of backend and frontend folders
+FRONTEND_DIR=$1/frontend
+BACKEND_DIR=$1/backend
+if [ -z "$FRONTEND_SOURCE_DIR" ]; then
+    FRONTEND_DIR=$1/$FRONTEND_SOURCE_DIR
+fi
+if [ -z "$BACKEND_SOURCE_DIR" ]; then
+    BACKEND_DIR=$1/$BACKEND_SOURCE_DIR
+fi
+
+# Displaying build strategy to user
+echo "---> Build Stategy"
+echo "--------------------- "
+if [ "$SKIP_FRONTEND_BUILD" = "YES" ]
+  then
+    echo "Frontend build is skipped"
+  else
+    echo "Frontend dir   = $FRONTEND_DIR"
+fi
+echo "Backend dir    = $BACKEND_DIR"
 
 install_frontend_bins() {
   local node_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.node")
@@ -46,21 +63,27 @@ install_frontend_bins() {
   install_npm "$npm_engine"
   export npm_run=$node_dir/bin/npm
 }
-install_frontend_bins
 
 install_frontend_deps() {
   cd $FRONTEND_DIR
   status  "Installing npm frontend dependencies"
   $npm_run install
 }
-install_frontend_deps
 
 compile_frontend_assets() {
   cd $FRONTEND_DIR
   echo -n "Building prod frontend assets ... "
   $npm_run --silent $NPM_TASK
 }
-compile_frontend_assets
+
+run_frontend_tasks() {
+  install_frontend_bins
+  install_frontend_deps
+  compile_frontend_assets
+}
+if [ "$SKIP_FRONTEND_BUILD" != "YES" ]; then
+  run_frontend_tasks
+fi
 
 install_backend_bins() {
   cd $BACKEND_DIR
