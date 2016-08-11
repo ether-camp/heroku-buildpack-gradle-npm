@@ -27,13 +27,15 @@ print_env
 export_env_dir $ENV_DIR
 
 # Locations of backend and frontend folders
-FRONTEND_DIR=$1/frontend
-BACKEND_DIR=$1/backend
+FRONTEND_DIR=$BUILD_DIR/frontend
+BACKEND_DIR=$BUILD_DIR/backend
 if [ -n "$FRONTEND_SOURCE_DIR" ]; then
-  FRONTEND_DIR=$1/$FRONTEND_SOURCE_DIR
+  FRONTEND_DIR=$BUILD_DIR/$FRONTEND_SOURCE_DIR
 fi
 if [ -n "$BACKEND_SOURCE_DIR" ]; then
-  BACKEND_DIR=$1/$BACKEND_SOURCE_DIR
+  function join { local IFS="$1"; shift; echo "$BUILD_DIR/$*"; }
+  IFS=';' read -ra BACKEND_SOURCE_DIRS <<< "$BACKEND_SOURCE_DIR"
+  BACKEND_DIR = join ; "${BACKEND_SOURCE_DIRS[@]}"
 fi
 
 # Displaying build strategy to user
@@ -85,9 +87,7 @@ if [ "$SKIP_FRONTEND_BUILD" != "YES" ]; then
   run_frontend_tasks
 fi
 
-install_backend_bins() {
-  cd $BACKEND_DIR
-
+install_backend_java() {
   JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-"https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz"}
   mkdir -p /tmp/jvm-common
   curl --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-common --strip-components=1
@@ -104,20 +104,25 @@ install_backend_bins() {
   fi
 
   export GRADLE_USER_HOME=$CACHE_DIR/.gradle
+}
 
-  if [ ! -f $BACKEND_DIR/gradlew ] ; then
+install_backend_gradlew() {
+  local backend_dir=$1
+  cd $backend_dir
+  if [ ! -f $backend_dir/gradlew ] ; then
     echo "-----> Installing Gradle Wrapper..."
     echo "       WARNING: Your application does not have it's own gradlew file."
     echo "       We'll install one for you, but this is a deprecated feature and"
     echo "       in the future may not be supported."
-    cp -rn ${OPT_DIR}/wrapper/* ${BACKEND_DIR}
+    cp -rn ${OPT_DIR}/wrapper/* ${backend_dir}
   fi
-  chmod +x ${BACKEND_DIR}/gradlew
+  chmod +x ${backend_dir}/gradlew
 }
-install_backend_bins
 
 build_backend() {
-BUILDCMD="./gradlew $GRADLE_TASK"
+  local backend_dir=$1
+  cd $backend_dir
+  BUILDCMD="./gradlew $GRADLE_TASK"
   # build app
   echo "-----> Building Gradle app..."
   echo "       WARNING: The Gradle buildpack is currently in Beta."
@@ -125,7 +130,18 @@ BUILDCMD="./gradlew $GRADLE_TASK"
 
   $BUILDCMD 2>&1 | sed -u 's/^/       /'
 }
-build_backend
+
+run_backend_tasks() {
+  install_backend_java
+  oldIFS=$IFS
+  IFS=";"
+  for path in $BACKEND_DIR; do
+    install_backend_gradlew $path
+    build_backend $path
+  done
+  IFS=$oldIFS
+}
+run_backend_tasks
 
 if [ "${PIPESTATUS[*]}" != "0" ]; then
   echo " !     Failed to build app. PIPESTATUS: ${PIPESTATUS[*]}"
