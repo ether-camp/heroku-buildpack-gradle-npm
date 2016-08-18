@@ -21,9 +21,10 @@ Default dirs (`backend` and `frontend`) could be overwritten with env vars:
 export BACKEND_SOURCE_DIR=back
 export FRONTEND_SOURCE_DIR=front
 ```
-Also several backend directories supported, splitted by `;`
+Also several directories supported, splitted by `;`
 ```bash
 export BACKEND_SOURCE_DIR=backend;worker
+export FRONTEND_SOURCE_DIR=frontend;embed
 ```
 Frontend build could be skipped by using appropriate var set to `YES`
 ```bash

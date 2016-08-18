@@ -29,8 +29,11 @@ export_env_dir $ENV_DIR
 # Locations of backend and frontend folders
 FRONTEND_DIR=$BUILD_DIR/frontend
 BACKEND_DIR=$BUILD_DIR/backend
+
 if [ -n "$FRONTEND_SOURCE_DIR" ]; then
-  FRONTEND_DIR=$BUILD_DIR/$FRONTEND_SOURCE_DIR
+  IFS=';'; FRONTEND_SOURCE_DIRS=($FRONTEND_SOURCE_DIR); unset IFS;
+  FRONTEND_SOURCE_DIRS=( "${FRONTEND_SOURCE_DIRS[@]/#/$BUILD_DIR""/}" )
+  FRONTEND_DIR=$(IFS=";" ; echo "${FRONTEND_SOURCE_DIRS[*]}")
 fi
 if [ -n "$BACKEND_SOURCE_DIR" ]; then
   IFS=';'; BACKEND_SOURCE_DIRS=($BACKEND_SOURCE_DIR); unset IFS;
@@ -50,8 +53,9 @@ fi
 echo "Backend dir    = $BACKEND_DIR"
 
 install_frontend_bins() {
-  local node_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.node")
-  local npm_engine=$(read_json "$FRONTEND_DIR/package.json" ".engines.npm")
+  frontend_dir=$1
+  local node_engine=$(read_json "$frontend_dir/package.json" ".engines.node")
+  local npm_engine=$(read_json "$frontend_dir/package.json" ".engines.npm")
 
   echo "engines.node (package.json):  ${node_engine:-unspecified}"
   echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
@@ -67,21 +71,29 @@ install_frontend_bins() {
 }
 
 install_frontend_deps() {
-  cd $FRONTEND_DIR
+  frontend_dir=$1
+  cd $frontend_dir
   status  "Installing npm frontend dependencies"
   $npm_run install
 }
 
 compile_frontend_assets() {
-  cd $FRONTEND_DIR
+  frontend_dir=$1
+  cd $frontend_dir
   echo -n "Building prod frontend assets ... "
   $npm_run --silent $NPM_TASK
 }
 
 run_frontend_tasks() {
-  install_frontend_bins
-  install_frontend_deps
-  compile_frontend_assets
+  [[ $FRONTEND_DIR =~ ([^\;]+) ]] && FIRST_FRONTEND_DIR=${BASH_REMATCH[1]}
+  install_frontend_bins ${FIRST_FRONTEND_DIR}
+  oldIFS=$IFS
+  IFS=";"
+  for path in $FRONTEND_DIR; do
+    install_frontend_deps $path
+    compile_frontend_assets $path
+  done
+  IFS=$oldIFS
 }
 if [ "$SKIP_FRONTEND_BUILD" != "YES" ]; then
   run_frontend_tasks
