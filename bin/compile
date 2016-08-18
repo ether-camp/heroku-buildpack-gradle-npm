@@ -80,8 +80,10 @@ install_frontend_deps() {
 compile_frontend_assets() {
   frontend_dir=$1
   cd $frontend_dir
+  COMPILECMD="$npm_run --silent $NPM_TASK"
   echo -n "Building prod frontend assets ... "
-  $npm_run --silent $NPM_TASK
+  echo "-----> executing $COMPILECMD in $frontend_dir"
+  eval $COMPILECMD
 }
 
 run_frontend_tasks() {
