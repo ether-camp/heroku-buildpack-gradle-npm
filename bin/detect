@@ -2,6 +2,7 @@
 # bin/use <build-dir>
 
 BACKEND_DIR=$1/backend
+echo "test: $BACKEND_DIR"
 if [ -n "$BACKEND_SOURCE_DIR" ]; then
   IFS=';'; BACKEND_SOURCE_DIRS=($BACKEND_SOURCE_DIR); unset IFS;
   BACKEND_SOURCE_DIRS=( "${BACKEND_SOURCE_DIRS[@]/#/$1""/}" )
@@ -9,10 +10,9 @@ if [ -n "$BACKEND_SOURCE_DIR" ]; then
   BACKEND_DIR=${BACKEND_SOURCE_DIRS[0]}
 fi
 
-echo "Backend dir: $BACKEND_DIR"
-
 if [[ -f $BACKEND_DIR/build.gradle ]]; then
   echo "GradleNpm" && exit 0
 else
-  echo "no" && exit 1
+  echo "Backend dir not found at: $BACKEND_DIR"
+  exit 1
 fi
