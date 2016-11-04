@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # bin/use <build-dir>
 
+BACKEND_DIR=$1/backend
+if [ -n "$BACKEND_SOURCE_DIR" ]; then
+  IFS=';'; BACKEND_SOURCE_DIRS=($BACKEND_SOURCE_DIR); unset IFS;
+  BACKEND_SOURCE_DIRS=( "${BACKEND_SOURCE_DIRS[@]/#/$1""/}" )
+  # We will check only the first one
+  BACKEND_DIR=${BACKEND_SOURCE_DIRS[0]}
+fi
 
-if [[ -f $1/backend/build.gradle && -f $1/frontend/package.json ]]; then
+if [[ -f $BACKEND_DIR/build.gradle ]]; then
   echo "GradleNpm" && exit 0
 else
   echo "no" && exit 1
