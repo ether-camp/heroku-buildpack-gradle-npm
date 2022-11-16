@@ -30,3 +30,10 @@ Frontend build could be skipped by using appropriate var set to `YES`
 ```bash
 export SKIP_FRONTEND_BUILD=YES
 ```
+Frontend built with `npm run build:prod`, or if `ENV` var is present `npm run build:{ENV}`, e.g.
+```bash
+export ENV=staging
+
+# build command will be
+npm run build:staging
+```

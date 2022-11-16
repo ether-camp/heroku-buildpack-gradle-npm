@@ -21,7 +21,7 @@ ENV_DIR=$3
 
 # Build systems tasks (Backend - Gradle, Frontend - NPM)
 GRADLE_TASK=${GRADLE_TASK-stage}
-NPM_TASK="run build:prod"
+NPM_TASK="run build:${ENV:-prod}"
 
 print_env
 export_env_dir $ENV_DIR
